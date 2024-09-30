@@ -1,0 +1,24 @@
+body {
+    text-align: center;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+}
+
+h1 {
+    color: forestgreen;
+    font-size: 24px;
+}
+
+#oog {
+    border-radius: 50%;
+    width: 10%;
+    height: 10%;
+}
+
+h3 {
+    outline: groove;
+    outline-width: thin;
+}
+
+#buttons, #button1, #button2 {
+    padding: 5px;
+}
