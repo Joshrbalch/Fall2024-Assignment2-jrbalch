@@ -1,10 +1,11 @@
 var timeEnabled = false;
 var timeInterval;
+var whichTurtle = 0;
 
 $(document).ready(function () {
     $('#timeButton').on('click', function () {
         console.log("Time button clicked");  // Debugging log
-
+        getTime();
         if (!timeEnabled) {
             timeEnabled = !timeEnabled;
             getTime(); // Initial time update
@@ -16,34 +17,69 @@ $(document).ready(function () {
 
     $('#searchButton').on('click', function () {
         console.log('Search Button clicked')
-        apiSearch();
+        apiSearch(false);
     });
+
+    $('#feelinLuckyButton').on('click', function () {
+        console.log('FEEEEEEL THE LUCK')
+        apiSearch(true);
+    })
 });
 
+function changeBackgroundImage() {
+    if (whichTurtle == 0) {
+        whichTurtle = 1;
+        document.body.style.backgroundImage = "url('/turtle2.jpg')"
+    }
+
+    else {
+        whichTurtle = 0;
+        document.body.style.backgroundImage = "url('/turtle.jpg')"
+    }
+}
+
+document.getElementById("searchEngineName").addEventListener("click", changeBackgroundImage);
+
 function getTime() {
-    console.log('Time Accessed')
+    console.log('Time Accessed');
+
     var now = new Date();
     var hours = now.getHours();
     var minutes = now.getMinutes();
-    var seconds = now.getSeconds();
-    var AMPM = 'AM'
+    var AMPM = 'AM';
 
-    // Format the time to HH:MM:SS
-    if (hours < 10) hours = '0' + hours;
+    // Add leading zero if needed
     if (minutes < 10) minutes = '0' + minutes;
-    if (seconds < 10) seconds = '0' + seconds;
-    if (hours > 12) {
-        hours = hours - 12;
+
+    // Convert to 12-hour format and adjust AM/PM
+    if (hours >= 12) {
         AMPM = 'PM';
+        if (hours > 12) hours = hours - 12;
+    } else if (hours === 0) {
+        hours = 12;
     }
 
-    var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + AMPM;
+    // Format time as HH:MM AM/PM
+    var currentTime = hours + ':' + minutes + ' ' + AMPM;
 
-    // Update the correct div for displaying time
-    document.getElementById('timeDiv').innerHTML = currentTime;
+    // Update the div with the current time
+    $('#timeDiv').html(currentTime);
+
+    // Check if the dialog is already initialized
+        // If not, initialize it
+    $('#timeDiv').dialog({
+            title: "Turtle Time",
+        close: function () {
+            $(this).dialog("close");
+            clearInterval(timeInterval);
+            timeEnabled = false;
+        }
+
+        });
+    $('#timeDiv').dialog('open');
 }
 
-function apiSearch() {
+function apiSearch(feelingLucky) {
     var params = {
         'q': $('#apiSearch').val(),
         'count': 50,
@@ -60,13 +96,21 @@ function apiSearch() {
     })
         .done(function (data) {
             var len = data.webPages.value.length;
+            var luckyWinner = data.webPages.value[0];
             var results = '';
-            for (var i = 0; i < len; i++) {
-                results += `<p><a href="${data.webPages.value[i].url}">${data.webPages.value[i].name}</a>: ${data.webPages.value[i].snippet}</p>`;
+
+            if (feelingLucky) {
+                window.location.href = luckyWinner.url;
             }
 
-            $('#searchResults').html(results);
-            //console.log(results);
+            else {
+                for (var i = 0; i < len; i++) {
+                    results += `<p><a href="${data.webPages.value[i].url}">${data.webPages.value[i].name}</a>: ${data.webPages.value[i].snippet}</p>`;
+                }
+
+                $('#searchResults').html(results);
+                //console.log(results);
+            }
         })
         .fail(function () {
             alert('error');
