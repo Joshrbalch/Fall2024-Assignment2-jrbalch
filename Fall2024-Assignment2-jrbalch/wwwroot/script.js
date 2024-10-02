@@ -24,6 +24,10 @@ $(document).ready(function () {
         console.log('FEEEEEEL THE LUCK')
         apiSearch(true);
     })
+    $('#imageSearchButton').on('click', function () {
+        console.log('Looking for images')
+        apiImageSearch();
+    })
 });
 
 function changeBackgroundImage() {
@@ -81,7 +85,7 @@ function getTime() {
 
 function apiSearch(feelingLucky) {
     var params = {
-        'q': $('#apiSearch').val(),
+        'q': $('#query').val(),
         'count': 50,
         'offset': 0,
         'mkt': 'en-us'
@@ -116,3 +120,44 @@ function apiSearch(feelingLucky) {
             alert('error');
         });
 }
+
+function apiImageSearch() {
+    var params = {
+        'q': $('#query').val(), // Gets the search query from an input field with id 'query'
+        'count': 50,            // Number of images to return
+        'offset': 0,            // Start at the first image
+        'mkt': 'en-us'          // Locale for the search results
+    };
+
+    $.ajax({
+        url: 'https://api.bing.microsoft.com/v7.0/images/search?' + $.param(params),
+        type: 'GET',
+        headers: {
+            'Ocp-Apim-Subscription-Key': 'fddf265d9a8349cf8d1bc8442dfff5a3'  // Your API key
+        }
+    })
+        .done(function (data) {
+            console.log(data);  // Log the data for debugging
+            var len = data.value.length;
+            var results = '';
+
+            // Loop through each image result
+            for (var i = 0; i < len; i++) {
+                var imageUrl = data.value[i].contentUrl;     // Get the URL of the image
+                var pageUrl = data.value[i].hostPageUrl;     // Get the URL of the page hosting the image
+
+                // Wrap the image in an anchor tag
+                results += `<a href="${pageUrl}" target="_blank">
+                          <img src="${imageUrl}" alt="Image result ${i + 1}" style="width: 200px; margin: 10px;">
+                        </a>`;
+            }
+
+            // Insert the images with anchors into the 'searchResults' element
+            $('#searchResults').html(results);
+        })
+        .fail(function () {
+            alert('Error occurred while fetching image search results');
+        });
+}
+
+
